@@ -1,0 +1,6 @@
+*.pem
+*.sh
+
+planfile
+.terraform*
+*.tfstate
