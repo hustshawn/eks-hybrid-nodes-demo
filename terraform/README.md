@@ -1,4 +1,4 @@
-# EKS Hybrid Node IAM Role
+# EKS Hybrid Node Terraform
 
 ## Usage
 
@@ -10,8 +10,9 @@ To provision the provided configurations you need to execute:
 ```bash
 terraform init
 terraform apply -target=module.remote_node_vpc -target=module.key_pair -target=local_file.key_pem -target=local_file.key_pub_pem --auto-approve
-cd ami && packer build -var 'ssh_keypair_name=hybrid-node' -var 'ssh_private_key_file=../key.pem' . && cd -
-terraform apply --auto-approve
+
+cd ami && packer build -var 'ssh_keypair_name=hybrid-node' -var 'ssh_private_key_file=../key.pem' .
+cd ../ && terraform apply --auto-approve
 ./join.sh
 ```
 
