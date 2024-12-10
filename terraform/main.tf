@@ -35,7 +35,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.31"
+  version = "~> 20.31.1" # Fixed the Auto Mode force re-creation issue, https://github.com/hashicorp/terraform-provider-aws/issues/40411
 
   cluster_name    = local.name
   cluster_version = local.cluster_version
@@ -44,7 +44,14 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 
   cluster_addons = {
-    # coredns                = {}
+    coredns                = {
+      resolve_conflicts_on_update = "OVERWRITE"
+      configuration_values = jsonencode({
+        nodeSelector = {
+          "eks.amazonaws.com/compute-type" = "hybrid"
+        }
+      })
+    }
     # eks-pod-identity-agent = {}
     # kube-proxy             = {}
   }
