@@ -210,7 +210,7 @@ resource "helm_release" "cilium" {
   name       = "cilium"
   repository = "https://helm.cilium.io/"
   chart      = "cilium"
-  version    = "1.16.4"
+  version    = "1.16.5"
   namespace  = "kube-system"
   wait       = false
 
@@ -230,8 +230,11 @@ resource "helm_release" "cilium" {
       operator:
         unmanagedPodWatcher:
           restart: false
+      bgpControlPlane:
+        enabled: false
     EOT
   ]
+  depends_on = [aws_instance.hybrid_node, module.eks]
 }
 
 ################################################################################

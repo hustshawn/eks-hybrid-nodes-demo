@@ -1,5 +1,8 @@
 # EKS Hybrid Node Terraform
 
+> [!CAUTION]
+> EC2 instances are not supported with EKS Hybrid Nodes. This example is provided for reference only in lieu of users having to provision a VM in their own environment.
+
 ## Usage
 
 > [!NOTE]

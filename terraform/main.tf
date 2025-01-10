@@ -17,7 +17,7 @@ provider "helm" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "eks-hybrid-cluster"
   region = "us-west-2"
 
   cluster_version = "1.31"
@@ -44,16 +44,8 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 
   cluster_addons = {
-    coredns                = {
-      resolve_conflicts_on_update = "OVERWRITE"
-      configuration_values = jsonencode({
-        nodeSelector = {
-          "eks.amazonaws.com/compute-type" = "hybrid"
-        }
-      })
-    }
-    # eks-pod-identity-agent = {}
-    # kube-proxy             = {}
+    eks-pod-identity-agent = { most_recent = true }
+    kube-proxy             = { most_recent = true }
   }
 
   create_node_security_group = false
@@ -94,6 +86,37 @@ module "eks" {
 
   tags = local.tags
 }
+
+data "aws_eks_addon_version" "most_recent" {
+  addon_name         = "coredns"
+  kubernetes_version = local.cluster_version
+  most_recent        = true
+}
+
+resource "aws_eks_addon" "coredns" {
+  cluster_name = module.eks.cluster_name
+  addon_name   = "coredns"
+
+  addon_version = data.aws_eks_addon_version.most_recent.version
+
+  # Add these parameters to prevent blocking
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  # Set preserve on delete to true
+  preserve = true
+
+
+  configuration_values = jsonencode({
+    nodeSelector = {
+      "eks.amazonaws.com/compute-type" = "hybrid"
+    }
+  })
+
+  # Important: Add depends_on for the Cilium installation
+  depends_on = [helm_release.cilium]
+}
+
 
 ################################################################################
 # VPC
